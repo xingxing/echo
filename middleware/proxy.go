@@ -56,6 +56,9 @@ type (
 
 		// ModifyResponse defines function to modify response from ProxyTarget.
 		ModifyResponse func(*http.Response) error
+
+		// To modify the outgoing request
+		Director func(*ProxyTarget) func(*http.Request)
 	}
 
 	// ProxyTarget defines the upstream target.
@@ -297,6 +300,8 @@ func proxyHTTP(tgt *ProxyTarget, c echo.Context, config ProxyConfig) http.Handle
 			c.Set("_error", httpError)
 		}
 	}
+
+	proxy.Director = config.Director(tgt)
 	proxy.Transport = config.Transport
 	proxy.ModifyResponse = config.ModifyResponse
 	return proxy
